@@ -11,14 +11,16 @@ public:
 	static bool white_turn;
 	static int squares[64];
 
+	static int king_squares[2];
 	static piece_list *knights;
 	static piece_list *bishops;
 	static piece_list *pawns;
 	static piece_list *queens;
 	static piece_list *rooks;
-	static piece_list *all_lists;
+	static std::vector<piece_list> all_lists;
 
 	void make_move(move move, bool in_search);
+	piece_list get_piece_list(int color_index, int piece);
 	void init();
 };
 
@@ -29,6 +31,10 @@ struct move {
 	const unsigned short target_square_mask = 0b0000111111000000;
 	const unsigned short flag_mask = 0b1111000000000000;
 	
+	move() {
+		move_value = 0;
+	}
+
 	move(unsigned short _move_value) {
 		this->move_value = _move_value;
 	}
