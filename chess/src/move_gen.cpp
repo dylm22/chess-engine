@@ -66,9 +66,10 @@ void move_gen::gen_sliding_piece_moves(int start_square, int first_dir_index, in
 
 void move_gen::generate_sliding_moves() {
 	piece_list rooks = b.rooks[mover_index];
+	std::cout << rooks.count();
 	for (int i = 0; i < rooks.count(); i++) {
 		gen_sliding_piece_moves(rooks[i], 0, 4);
-	}
+	}	
 	piece_list bishops = b.bishops[mover_index];
 	for (int i = 0; i < bishops.count(); i++) {
 		gen_sliding_piece_moves(bishops[i], 4, 8);

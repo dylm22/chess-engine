@@ -11,9 +11,9 @@ piece_list* board::bishops;
 piece_list* board::pawns;
 piece_list* board::queens;
 piece_list* board::rooks;
-std::vector<piece_list> board::all_lists;
+std::vector<piece_list*> board::all_lists;
 
-piece_list board::get_piece_list(int color_index, int piece) {
+piece_list *board::get_piece_list(int color_index, int piece){
 	return all_lists[color_index * 8 + (piece % 10)];
 }
 void board::make_move(move move, bool in_search) {
@@ -25,7 +25,7 @@ void board::make_move(move move, bool in_search) {
 	int color = white_turn ? 0 : 1;
 
 	if (squares[move_to] != NONE) { //capturing
-		get_piece_list(1 - color, utils::piece_type(squares[move_to])).remove_piece_at_square(move_to);
+		get_piece_list(1 - color, utils::piece_type(squares[move_to]))->remove_piece_at_square(move_to);
 	}
 
 	if (piece_type == KING) {
@@ -33,7 +33,7 @@ void board::make_move(move move, bool in_search) {
 		//castling bs
 	}
 	else {
-		get_piece_list(color, piece_type).move_piece(move_from, move_to);
+		get_piece_list(color, piece_type)->move_piece(move_from, move_to);
 	}
 
 	squares[move_to] = move_piece;
@@ -58,22 +58,22 @@ void board::init() {
 	piece_list emptyList = piece_list(0);
 	
 	
-	all_lists.push_back(emptyList);
-	all_lists.push_back(bishops[WHITE_INDEX]);
-	all_lists.push_back(emptyList);
-	all_lists.push_back(knights[WHITE_INDEX]);
-	all_lists.push_back(emptyList);
-	all_lists.push_back(pawns[WHITE_INDEX]);
-	all_lists.push_back(queens[WHITE_INDEX]);
-	all_lists.push_back(rooks[WHITE_INDEX]);
-	all_lists.push_back(emptyList);
-	all_lists.push_back(bishops[BLACK_INDEX]);
-	all_lists.push_back(emptyList);
-	all_lists.push_back(knights[BLACK_INDEX]);
-	all_lists.push_back(emptyList);
-	all_lists.push_back(pawns[BLACK_INDEX]);
-	all_lists.push_back(queens[BLACK_INDEX]);
-	all_lists.push_back(rooks[BLACK_INDEX]);
+	all_lists.push_back(&emptyList);
+	all_lists.push_back(&bishops[WHITE_INDEX]);
+	all_lists.push_back(&emptyList);
+	all_lists.push_back(&knights[WHITE_INDEX]);
+	all_lists.push_back(&emptyList);
+	all_lists.push_back(&pawns[WHITE_INDEX]);
+	all_lists.push_back(&queens[WHITE_INDEX]);
+	all_lists.push_back(&rooks[WHITE_INDEX]);
+	all_lists.push_back(&emptyList);
+	all_lists.push_back(&bishops[BLACK_INDEX]);
+	all_lists.push_back(&emptyList);
+	all_lists.push_back(&knights[BLACK_INDEX]);
+	all_lists.push_back(&emptyList);
+	all_lists.push_back(&pawns[BLACK_INDEX]);
+	all_lists.push_back(&queens[BLACK_INDEX]);
+	all_lists.push_back(&rooks[BLACK_INDEX]);
 
 	
 	
