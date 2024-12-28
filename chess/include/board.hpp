@@ -17,7 +17,7 @@ public:
 	static piece_list *pawns;
 	static piece_list *queens;
 	static piece_list *rooks;
-	static std::vector<piece_list*> all_lists;
+	static piece_list* all_lists[16];
 
 	void make_move(move move, bool in_search);
 	piece_list *get_piece_list(int color_index, int piece);

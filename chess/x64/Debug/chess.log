@@ -1,7 +1,2 @@
-﻿  board.cpp
-  game.cpp
-C:\Users\dylan\Desktop\dev\chess\chess\src\game.cpp(13,8): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-  main.cpp
-  move_gen.cpp
-  Generating Code...
+﻿  move_gen.cpp
   chess.vcxproj -> C:\Users\dylan\Desktop\dev\chess\x64\Debug\chess.exe

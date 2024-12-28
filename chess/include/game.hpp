@@ -6,18 +6,7 @@
 #include "board.hpp"
 #include <iostream>
 
-#define NONE 46
-#define KING 10
-#define PAWN 15
-#define KNIGHT 13
-#define BISHOP 1
-#define ROOK 17
-#define QUEEN 16
 
-#define WHITE 65
-#define BLACK 97
-
-#define STARTING_POSITION "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 class game {
 public: 

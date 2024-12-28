@@ -14,7 +14,14 @@ public:
 	void init();
 	void generate_sliding_moves();
 	void gen_sliding_piece_moves(int start_square, int first_dir_index, int last_dir_index);
+	void gen_knight_moves();
+
+	void calculate_attack_map();
+	void gen_sliding_attack_map();
+	void update_sliding_attack_map(int start_square, int start_dir, int end_dir);
 	bool is_pinned(int square);
+	bool is_moving_along_ray(int ray_dir, int start_square, int target_square);
+	bool square_is_in_check_ray(int square);
 private:
 	std::vector<move> moves;
 	board b;

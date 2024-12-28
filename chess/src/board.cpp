@@ -1,7 +1,7 @@
 #include "def.hpp"
 #include "board.hpp"
 #include "utils.hpp"
-#include<iostream>
+#include <iostream>
 
 int board::squares[64];
 bool board::white_turn;
@@ -11,7 +11,7 @@ piece_list* board::bishops;
 piece_list* board::pawns;
 piece_list* board::queens;
 piece_list* board::rooks;
-std::vector<piece_list*> board::all_lists;
+piece_list* board::all_lists[16];
 
 piece_list *board::get_piece_list(int color_index, int piece){
 	return all_lists[color_index * 8 + (piece % 10)];
@@ -58,22 +58,22 @@ void board::init() {
 	piece_list emptyList = piece_list(0);
 	
 	
-	all_lists.push_back(&emptyList);
-	all_lists.push_back(&bishops[WHITE_INDEX]);
-	all_lists.push_back(&emptyList);
-	all_lists.push_back(&knights[WHITE_INDEX]);
-	all_lists.push_back(&emptyList);
-	all_lists.push_back(&pawns[WHITE_INDEX]);
-	all_lists.push_back(&queens[WHITE_INDEX]);
-	all_lists.push_back(&rooks[WHITE_INDEX]);
-	all_lists.push_back(&emptyList);
-	all_lists.push_back(&bishops[BLACK_INDEX]);
-	all_lists.push_back(&emptyList);
-	all_lists.push_back(&knights[BLACK_INDEX]);
-	all_lists.push_back(&emptyList);
-	all_lists.push_back(&pawns[BLACK_INDEX]);
-	all_lists.push_back(&queens[BLACK_INDEX]);
-	all_lists.push_back(&rooks[BLACK_INDEX]);
+	all_lists[0] = &emptyList;
+	all_lists[1] = &bishops[WHITE_INDEX];
+	all_lists[2] = &emptyList;
+	all_lists[3] = &knights[WHITE_INDEX];
+	all_lists[4] = &emptyList;
+	all_lists[5] = &pawns[WHITE_INDEX];
+	all_lists[6] = &queens[WHITE_INDEX];
+	all_lists[7] = &rooks[WHITE_INDEX];
+	all_lists[8] = &emptyList;
+	all_lists[9] = &bishops[BLACK_INDEX];
+	all_lists[10] = &emptyList;
+	all_lists[11] = &knights[BLACK_INDEX];
+	all_lists[12] = &emptyList;
+	all_lists[13] = &pawns[BLACK_INDEX];
+	all_lists[14] = &queens[BLACK_INDEX];
+	all_lists[15] = &rooks[BLACK_INDEX];
 
 	
 	

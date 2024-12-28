@@ -7,7 +7,7 @@
 #include "pre_computed_data.hpp"
 
 int main() {
-	precomputed_data::precompute_edge_dist();
+	precomputed_data::precompute_data();
 
 	game *p_g = new game;
 	board* p_b = new board;

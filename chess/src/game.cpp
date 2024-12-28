@@ -32,15 +32,17 @@ void game::load_position_from_fen(std::string fen) {
 void game::create_board() {
 	//load_position_from_fen(STARTING_POSITION);
 
-	b.squares[22] = WHITE + ROOK;
+	b.squares[notation_to_number("h7")] = WHITE + ROOK;
 
-	b.squares[60] = WHITE + ROOK;
+	b.squares[notation_to_number("d1")] = WHITE + QUEEN;
 
-	b.squares[20] = WHITE + BISHOP;
+	b.squares[notation_to_number("g1")] = BLACK + QUEEN;
 
-	b.squares[15] = BLACK + QUEEN;
+	b.squares[notation_to_number("b1")] = WHITE + KING;
 
-	b.squares[34] = BLACK + ROOK;
+	b.squares[notation_to_number("c8")] = BLACK + KING;
+
+	b.squares[notation_to_number("d7")] = BLACK + KNIGHT;
 
 	for (int i = 0; i < 64; i++) {
 		int piece = b.squares[i];
