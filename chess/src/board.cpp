@@ -12,33 +12,85 @@ piece_list* board::pawns;
 piece_list* board::queens;
 piece_list* board::rooks;
 piece_list* board::all_lists[16];
+unsigned int cur_game_state;
+uint64_t board::cur_game_state;
+
+
+const uint64_t board::white_castle_kingside_mask = 0b1111111111111110;
+const uint64_t board::white_castle_queenside_mask = 0b1111111111111101;
+const uint64_t board::black_castle_kingside_mask = 0b1111111111111011;
+const uint64_t board::black_castle_queenside_mask = 0b1111111111110111;
+const uint64_t board::white_castle_mask = white_castle_kingside_mask & white_castle_queenside_mask;
+const uint64_t board::black_castle_mask = black_castle_kingside_mask & black_castle_queenside_mask;
 
 piece_list *board::get_piece_list(int color_index, int piece){
 	return all_lists[color_index * 8 + (piece % 10)];
 }
 void board::make_move(move move, bool in_search) {
+	uint64_t old_enpassant_file = (cur_game_state >> 4) & 15;
+	uint64_t old_castle_state = cur_game_state & 15;
+	uint64_t new_castle_state = old_castle_state;
+	cur_game_state = 0;
 	int move_from = move.get_start_square();
 	int move_to = move.get_target_square();
 	int move_piece = squares[move_from];
 	
 	int piece_type = utils::piece_type(move_piece);
 	int color = white_turn ? 0 : 1;
+	int captured_piece_type = utils::piece_type(squares[move_to]);
 
+	int move_flag = move.move_value >> 12; //move 12 bits over to get to the flag part
+
+	bool is_promotion = false; //FIX LATER
+
+	//cur_game_state |= (unsigned short)((captured_piece_type%10) << 8);
 	if (squares[move_to] != NONE) { //capturing
-		get_piece_list(1 - color, utils::piece_type(squares[move_to]))->remove_piece_at_square(move_to);
+		get_piece_list(1 - color, captured_piece_type)->remove_piece_at_square(move_to);
 	}
 
 	if (piece_type == KING) {
 		king_squares[color] = move_to;
-		//castling bs
+		new_castle_state &= (white_turn) ? white_castle_mask : black_castle_mask;
 	}
 	else {
 		get_piece_list(color, piece_type)->move_piece(move_from, move_to);
 	}
+	if (is_promotion) {
 
+	}
+	else {
+		switch (move_flag)
+		{
+		case CASTLE_FLAG:
+			bool king_side = (move_to == 6 || move_to == 62); // g1 and g8 in index form
+			int castling_rook_from = (king_side) ? move_to + 1 : move_to - 2; 
+			int castling_rook_to = (king_side) ? move_to - 1 : move_to + 1;
+
+			squares[castling_rook_from] = NONE;
+			squares[castling_rook_to] = ROOK + ((white_turn) ? WHITE : BLACK);
+
+			rooks[color].move_piece(castling_rook_from, castling_rook_to);
+			break;
+		}
+	}
 	squares[move_to] = move_piece;
 	squares[move_from] = NONE;
 
+	if (old_castle_state != 0) {
+		if (move_to == 7 || move_from == 7) { //h1
+			new_castle_state &= white_castle_kingside_mask;
+		} else if (move_to == 0 || move_from == 0) {//a1
+			new_castle_state &= white_castle_queenside_mask;
+		}
+		if (move_to == 63 || move_from == 63){ //h8 
+			new_castle_state &= black_castle_kingside_mask;
+		}
+		else if (move_to == 56 || move_from == 56) {
+			new_castle_state &= black_castle_queenside_mask;
+		}
+	}
+
+	cur_game_state |= new_castle_state;
 	white_turn = !white_turn;
 }
 

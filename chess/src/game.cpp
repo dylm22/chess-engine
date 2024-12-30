@@ -10,9 +10,10 @@ board game::b;
 void game::load_position_from_fen(std::string fen) {
 	int file = 0; int rank = 7;
 
-	int n = fen.find(" ");
+	int n = fen.length();
+	int i = 0;
 
-	for (int i = 0; i < n; i++) {
+	for (; i < n && (fen[i]!=' '); i++) {
 		if (fen[i] == '/') {
 			file = 0;
 			rank--;
@@ -27,22 +28,43 @@ void game::load_position_from_fen(std::string fen) {
 			}
 		}
 	}
+
+	b.white_turn = (fen[n + 2] == 'w') ? true : false;
+
+	w_castle_king = false;
+	w_castle_queen = false;
+	b_castle_king = false;
+	b_castle_queen = false;
+	for (i += 4; i < n && (fen[i] != ' '); i++) {
+		if (fen[i] == 'k') {
+			b_castle_king = true;
+		}
+		else if (fen[i] == 'K') {
+			w_castle_king = true;
+		}
+		else if (fen[i] == 'q') {
+			b_castle_queen = true;
+		}
+		else if (fen[i] == 'Q') {
+			w_castle_queen = true;
+		}
+	}
 }
 
 void game::create_board() {
 	//load_position_from_fen(STARTING_POSITION);
 
-	b.squares[notation_to_number("h7")] = WHITE + ROOK;
+	b.squares[utils::notation_to_number("h7")] = WHITE + ROOK;
 
-	b.squares[notation_to_number("d1")] = WHITE + QUEEN;
+	b.squares[utils::notation_to_number("d1")] = WHITE + QUEEN;
 
-	b.squares[notation_to_number("g1")] = BLACK + QUEEN;
+	b.squares[utils::notation_to_number("g1")] = BLACK + QUEEN;
 
-	b.squares[notation_to_number("b1")] = WHITE + KING;
+	b.squares[utils::notation_to_number("b1")] = WHITE + KING;
 
-	b.squares[notation_to_number("c8")] = BLACK + KING;
+	b.squares[utils::notation_to_number("c8")] = BLACK + KING;
 
-	b.squares[notation_to_number("d7")] = BLACK + KNIGHT;
+	b.squares[utils::notation_to_number("d7")] = BLACK + KNIGHT;
 
 	for (int i = 0; i < 64; i++) {
 		int piece = b.squares[i];
@@ -64,7 +86,12 @@ void game::create_board() {
 			}
 		}
 	}
-	
+
+	int white_castle = ((w_castle_king) ? 1 << 0 : 0) | ((w_castle_queen) ? 1 << 1 : 0);
+	int black_castle = ((b_castle_king) ? 1 << 2 : 0) | ((b_castle_queen) ? 1 << 3 : 0);
+	//int en_passant_state = loadedPosition.epFile << 4;
+	unsigned short initialGameState = (unsigned short)(white_castle | black_castle);
+	b.cur_game_state = initialGameState;
 }
 void game::draw_board() {
 	std::cout << std::endl << std::endl;
@@ -82,8 +109,8 @@ void game::handle_input() {
 	std::string _move;
 	std::getline(std::cin, _move);
 	
-	int start_index = notation_to_number(_move.substr(0, 2));
-	int target_index = notation_to_number(_move.substr(2, 4));
+	int start_index = utils::notation_to_number(_move.substr(0, 2));
+	int target_index = utils::notation_to_number(_move.substr(2, 4));
 
 	bool is_legal = false;
 	move_gen n;
@@ -113,10 +140,6 @@ void game::handle_input() {
 		b.make_move(move(start_index, target_index), false);
 	else
 		std::cout << "move was illegal";
-}
-
-int game::notation_to_number(std::string notation) {
-	return ((((int)notation[0]) - 96)-1) + ((((int)notation[1] - 48)-1) * 8);
 }
 
 

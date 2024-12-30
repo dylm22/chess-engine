@@ -9,6 +9,11 @@ std::vector<move> move_gen::generate_moves(board b) {
 	init();
 
 	calculate_attack_map();
+	gen_king_moves();
+
+	if (double_check) { //only legal moves would be king moves
+		return moves;
+	}
 
 	generate_sliding_moves();
 	gen_knight_moves();
@@ -21,7 +26,7 @@ void move_gen::init() {
 	check = false;
 	double_check = false;
 	pins_exist = false;
-	
+
 	check_bitmask = 0;
 	pin_bitmask = 0;
 
@@ -31,7 +36,55 @@ void move_gen::init() {
 
 	mover_index = b.white_turn ? 0 : 1;
 	opponent_index = 1 - mover_index;
+	determine_castling_rights();
 }
+
+void move_gen::gen_king_moves() {
+	for (int i = 0; i < 8; i++) {
+		int target_square = precomputed_data::king_moves[b.king_squares[mover_index]][i];
+
+		if (target_square == 255) { //target square was ineligble in the precomputation
+			break;
+		}
+
+		int piece_on_target_square = b.squares[target_square];
+
+		bool is_enemy_piece = (utils::is_black(piece_on_target_square) != is_black);
+		if (piece_on_target_square != NONE && !is_enemy_piece) {
+			continue;
+		}
+
+		if (!is_enemy_piece) {
+			if (square_is_in_check_ray(target_square)) {
+				continue;
+			}
+		}
+
+		if (!square_is_attacked(target_square)) {
+			moves.push_back(move(b.king_squares[mover_index], target_square));
+
+			if (!check && !is_enemy_piece) {
+				if ((target_square == 5 || target_square == 61) && can_kingside_castle){
+					int castle_king_square = target_square + 1;
+					if (b.squares[castle_king_square] == NONE) {
+						if (!square_is_attacked(castle_king_square)) {
+							moves.push_back(move(b.king_squares[mover_index], castle_king_square, CASTLE_FLAG));
+						}
+					}
+				}
+				else if ((target_square == 3 || target_square == 59) && can_queenside_castle) {
+					int castle_queen_square = target_square - 1;
+					if (b.squares[castle_queen_square] == NONE && b.squares[castle_queen_square - 1] == NONE) {
+						if (!square_is_attacked(castle_queen_square)) {
+							moves.push_back(move(b.king_squares[mover_index], castle_queen_square, CASTLE_FLAG));
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 void move_gen::gen_sliding_piece_moves(int start_square, int first_dir_index, int last_dir_index) {
 	bool pinned = is_pinned(start_square); 
 	if (check && pinned) {
@@ -128,7 +181,7 @@ void move_gen::update_sliding_attack_map(int start_square, int start_dir, int en
 			int target_square = start_square + cur_dir_offset * (n + 1);
 			int target_square_piece = b.squares[target_square];
 
-			opponent_sliding_attack_mask |= 1ul << target_square;
+			opponent_sliding_attack_mask |= 1ull << target_square;
 			if (target_square != b.king_squares[mover_index]) {
 				if (target_square_piece != NONE) {
 					break;
@@ -172,11 +225,11 @@ void move_gen::calculate_attack_map() {
 		int n = precomputed_data::num_squares_to_edge[b.king_squares[mover_index]][d];
 		int dir_offset = precomputed_data::dir_offsets[d];
 		bool is_friendly_piece_along_path = false;
-		unsigned long ray_mask = 0;
+		uint64_t ray_mask = 0;
 	
 		for (int i = 0; i < n; i++) {
 			int square_index = b.king_squares[mover_index] + dir_offset * (i + 1);
-			ray_mask |= 1ul << square_index;
+			ray_mask |= (1ull << square_index);
 			int piece = b.squares[square_index];
 
 
@@ -203,8 +256,7 @@ void move_gen::calculate_attack_map() {
 							check = true;
 						}
 						break;
-					}
-					else {
+					} else {
 						break; //cannot move in this dir, is blocking any checks or pins
 					}
 				}
@@ -230,7 +282,7 @@ void move_gen::calculate_attack_map() {
 			is_knight_check = true;
 			double_check = check; // same as above, if already in check, then its double
 			check = true;
-			check_bitmask |= 1ul << start_square;
+			check_bitmask |= 1ull << start_square;
 		}
 	}
 
@@ -240,19 +292,33 @@ void move_gen::calculate_attack_map() {
 
 	for (int pi = 0; pi < opponent_pawns.count(); pi++) {
 		int square = opponent_pawns[pi];
-		unsigned long pawn_attacks = precomputed_data::pawn_attack_bitboards[square][opponent_index];
+		uint64_t pawn_attacks = precomputed_data::pawn_attack_bitboards[square][opponent_index];
 		opponent_pawn_attack_mask |= pawn_attacks;
 
 		if (!is_pawn_check && utils::bitboard_contains_square(pawn_attacks, b.king_squares[mover_index])) {
 			is_pawn_check = true;
 			double_check = check;
 			check = true;
-			check_bitmask |= 1ul << square;
+			check_bitmask |= 1ull << square;
 		}
 	}
+	pawnless_opponent_attack_mask = opponent_sliding_attack_mask | opponent_knight_attack_mask | precomputed_data::king_attack_bitboards[b.king_squares[opponent_index]];
+	opponent_attack_mask = pawnless_opponent_attack_mask | opponent_pawn_attack_mask;
 }
 
 
 bool move_gen::square_is_in_check_ray(int square) {
 	return check && ((check_bitmask >> square) & 1) != 0;
+}
+
+bool move_gen::square_is_attacked(int square) {
+	return utils::bitboard_contains_square(opponent_attack_mask, square);
+}
+
+void move_gen::determine_castling_rights() {
+	int m1 = (b.white_turn) ? 1 : 4;
+	can_kingside_castle = (b.cur_game_state & m1) != 0;
+
+	int m2 = (b.white_turn) ? 2 : 8;
+	can_kingside_castle = (b.cur_game_state & m2) != 0;
 }

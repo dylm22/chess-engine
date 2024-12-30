@@ -10,8 +10,10 @@ namespace precomputed_data {
 	int dir_offsets[8] = { 8,-8,-1,1,7,-7,9,-9 };
 	int all_knight_jumps[] = { 15, 17, -17, -15, 10, -6, 6, -10 };
 	unsigned char knight_moves[64][8];
-	unsigned long knight_attack_bitboards[64];
-	unsigned long pawn_attack_bitboards[64][2];
+	unsigned char king_moves[64][8];
+	uint64_t king_attack_bitboards[64];
+	uint64_t knight_attack_bitboards[64];
+	uint64_t pawn_attack_bitboards[64][2];
 	int dir_lookup[127];
 
 	void precompute_dir_lookup() {
@@ -31,6 +33,35 @@ namespace precomputed_data {
 			}
 
 			dir_lookup[i] = abs_dir * utils::sign(offset);
+		}
+	}
+
+	void precompute_king_moves(int i) {
+		int y = i / 8;
+		int x = i - y * 8;
+
+		std::vector<unsigned char> legal_king_moves;
+
+		for (int k = 0; k < 8; k++) {
+			int king_target_square = i + dir_offsets[k];
+			if (king_target_square >= 0 && king_target_square < 64) {
+				int king_y = king_target_square / 8;
+				int king_x = king_target_square - king_y * 8;
+
+				int max_coord_dst = std::max(std::abs(x - king_x), std::abs(y - king_y));
+				if (max_coord_dst == 1) {
+					legal_king_moves.push_back((unsigned char)king_target_square);
+					king_attack_bitboards[i] |= 1ull << king_target_square;
+				}
+			}
+		}
+		for (int k = 0; k < 8; k++) {
+			if (k < legal_king_moves.size()) {
+				king_moves[i][k] = legal_king_moves[k];
+			}
+			else {
+				king_moves[i][k] = 255;
+			}
 		}
 	}
 
@@ -55,8 +86,7 @@ namespace precomputed_data {
 
 	void precompute_knight_moves(int i) {
 		std::vector<unsigned char> legal_knight_moves;
-		unsigned long knight_bitboard = 0;
-
+		uint64_t knight_bitboard = 0;
 		int y = i / 8;
 		int x = i - y * 8;
 
@@ -70,7 +100,7 @@ namespace precomputed_data {
 				int max_coord_dst = std::max(std::abs(x - knight_x), std::abs(y - knight_y));
 				if (max_coord_dst == 2) {
 					legal_knight_moves.push_back((unsigned char)knight_target_square);
-					knight_bitboard |= 1ul << knight_target_square;
+					knight_bitboard |= 1ull << knight_target_square;
 				}
 			}
 		}
@@ -94,21 +124,21 @@ namespace precomputed_data {
 		if (x > 0) {
 			if (y < 7) {
 				pawn_w.push_back(i + 7);
-				pawn_attack_bitboards[i][0] |= 1ul << (i + 7); //7 is diagonally up to the left for white, 0 is the index of the white color
+				pawn_attack_bitboards[i][0] |= 1ull << (i + 7); //7 is diagonally up to the left for white, 0 is the index of the white color
 			}
 			if (y > 0) {
 				pawn_b.push_back(i - 9);
-				pawn_attack_bitboards[i][1] |= 1ul << (i - 9); //-9 is diagonally down to the left for black, 1 is black index
+				pawn_attack_bitboards[i][1] |= 1ull << (i - 9); //-9 is diagonally down to the left for black, 1 is black index
 			}
 		}
 		if (x < 7) {
 			if (y < 7) {
 				pawn_w.push_back(i + 9);
-				pawn_attack_bitboards[i][0] |= 1ul << (i + 9); //same thing other direction, up right this time
+				pawn_attack_bitboards[i][0] |= 1ull << (i + 9); //same thing other direction, up right this time
 			}
 			if (y > 0) {
 				pawn_b.push_back(i - 7);
-				pawn_attack_bitboards[i][1] |= 1ul << (i - 7); 
+				pawn_attack_bitboards[i][1] |= 1ull << (i - 7); 
 			}
 		}
 	}
@@ -118,6 +148,7 @@ namespace precomputed_data {
 			precompute_edge_dist(i);
 			precompute_knight_moves(i);
 			precompute_pawn_moves(i);
+			precompute_king_moves(i);
 			precompute_dir_lookup();
 		}
 	}

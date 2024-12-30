@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #define NONE 46
 #define KING 10
 #define PAWN 15
@@ -30,10 +32,13 @@ namespace utils {
 		return (piece == ROOK || piece == QUEEN);
 	}
 
-	inline bool bitboard_contains_square(unsigned long bitboard, int square) {
+	inline bool bitboard_contains_square(uint64_t bitboard, int square) {
 		return ((bitboard >> square) & 1) != 0;
 	}
 	inline int sign(int val) {
 		return (0 < val) - (val < 0);
+	}
+	inline int notation_to_number(std::string notation) {
+		return ((((int)notation[0]) - 96) - 1) + ((((int)notation[1] - 48) - 1) * 8);
 	}
 }

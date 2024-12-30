@@ -14,11 +14,16 @@ public:
 	static board b;
 
 	//std::vector<move> gen_moves();
-	int notation_to_number(std::string notation);
 	void handle_input();
 	void load_position_from_fen(std::string fen);
 	void create_board();
 	void draw_board();
+
+private :
+	bool w_castle_king;
+	bool w_castle_queen;
+	bool b_castle_king;
+	bool b_castle_queen;
 };
 
 

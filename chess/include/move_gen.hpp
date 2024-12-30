@@ -7,14 +7,12 @@
 
 class move_gen {
 public: 
-	unsigned long opponent_attack_mask;
-	unsigned long opponent_pawn_attack_mask;
-
 	std::vector<move> generate_moves(board b);
 	void init();
 	void generate_sliding_moves();
 	void gen_sliding_piece_moves(int start_square, int first_dir_index, int last_dir_index);
 	void gen_knight_moves();
+	void gen_king_moves();
 
 	void calculate_attack_map();
 	void gen_sliding_attack_map();
@@ -22,6 +20,10 @@ public:
 	bool is_pinned(int square);
 	bool is_moving_along_ray(int ray_dir, int start_square, int target_square);
 	bool square_is_in_check_ray(int square);
+	bool square_is_attacked(int square);
+	void determine_castling_rights();
+
+
 private:
 	std::vector<move> moves;
 	board b;
@@ -34,12 +36,16 @@ private:
 	bool check;
 	bool double_check;
 	bool pins_exist;
+	bool can_kingside_castle;
+	bool can_queenside_castle;
 
-	unsigned long check_bitmask;
-	unsigned long pin_bitmask;
+	uint64_t check_bitmask;
+	uint64_t pin_bitmask;
 
-	unsigned long opponent_knight_attack_mask;
-	unsigned long pawnless_opponent_attack_mask;
-	unsigned long opponent_sliding_attack_mask;
+	uint64_t opponent_knight_attack_mask;
+	uint64_t pawnless_opponent_attack_mask;
+	uint64_t opponent_sliding_attack_mask;
+	uint64_t opponent_attack_mask;
+	uint64_t opponent_pawn_attack_mask;
 
 };

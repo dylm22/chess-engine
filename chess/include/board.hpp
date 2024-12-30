@@ -6,6 +6,15 @@
 #define WHITE_INDEX 0
 #define BLACK_INDEX 1
 
+#define NO_FLAG 0
+#define EN_PASSANT_FLAG 1
+#define CASTLE_FLAG 2
+#define QUEEN_PROMO_FLAG 3
+#define KNIGHT_PROMO_FLAG 4
+#define ROOK_PROMO_FLAG 5
+#define BISHOP_PROMO_FLAG 6
+#define TWO_PAWN_PUSH_FLAG 7
+
 class board {
 public:
 	static bool white_turn;
@@ -19,9 +28,20 @@ public:
 	static piece_list *rooks;
 	static piece_list* all_lists[16];
 
+	static uint64_t cur_game_state;
+
 	void make_move(move move, bool in_search);
 	piece_list *get_piece_list(int color_index, int piece);
 	void init();
+
+private: 
+	static const uint64_t white_castle_kingside_mask;
+	static const uint64_t white_castle_queenside_mask;
+	static const uint64_t black_castle_kingside_mask;
+	static const uint64_t black_castle_queenside_mask;
+						
+	static const uint64_t white_castle_mask;
+	static const uint64_t black_castle_mask;
 };
 
 struct move {
@@ -41,7 +61,9 @@ struct move {
 	move(int _start_square, int _target_square) {
 		move_value = (unsigned short)(_start_square | _target_square << 6);
 	}
-	
+	move(int _start_square, int _target_square, int flag) {
+		move_value = (unsigned short)(_start_square | _target_square << 6 | flag << 12);
+	}
 	int get_start_square() {
 		return move_value & start_square_mask;
 	}
