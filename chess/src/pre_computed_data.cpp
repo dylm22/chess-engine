@@ -15,6 +15,7 @@ namespace precomputed_data {
 	uint64_t knight_attack_bitboards[64];
 	uint64_t pawn_attack_bitboards[64][2];
 	int dir_lookup[127];
+	unsigned char pawn_attack_dirs[2][2];
 
 	void precompute_dir_lookup() {
 		for (int i = 0; i < 127; i++) {
@@ -151,5 +152,10 @@ namespace precomputed_data {
 			precompute_king_moves(i);
 			precompute_dir_lookup();
 		}
+
+		pawn_attack_dirs[0][0] = 4;
+		pawn_attack_dirs[0][1] = 6;
+		pawn_attack_dirs[1][0] = 7;
+		pawn_attack_dirs[1][1] = 5;
 	}
 }

@@ -12,6 +12,8 @@ namespace precomputed_data {
 	extern uint64_t pawn_attack_bitboards[64][2];
 	extern int dir_lookup[127];
 	extern unsigned char king_moves[64][8];
+
+	extern unsigned char pawn_attack_dirs[2][2];
 	
 	void precompute_data();
 	void precompute_edge_dist(int i);

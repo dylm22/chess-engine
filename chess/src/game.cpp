@@ -5,7 +5,7 @@
 #include "move_gen.hpp"
 
 board game::b;
-
+ai_player game::bot;
 
 void game::load_position_from_fen(std::string fen) {
 	int file = 0; int rank = 7;
@@ -13,7 +13,7 @@ void game::load_position_from_fen(std::string fen) {
 	int n = fen.length();
 	int i = 0;
 
-	for (; i < n && (fen[i]!=' '); i++) {
+	for (; i < n && (fen[i] != ' '); i++) {
 		if (fen[i] == '/') {
 			file = 0;
 			rank--;
@@ -29,13 +29,13 @@ void game::load_position_from_fen(std::string fen) {
 		}
 	}
 
-	b.white_turn = (fen[n + 2] == 'w') ? true : false;
+	b.white_turn = (fen[i + 1] == 'w') ? true : false;
 
 	w_castle_king = false;
 	w_castle_queen = false;
 	b_castle_king = false;
 	b_castle_queen = false;
-	for (i += 4; i < n && (fen[i] != ' '); i++) {
+	for (i += 3; i < n && (fen[i] != ' '); i++) {
 		if (fen[i] == 'k') {
 			b_castle_king = true;
 		}
@@ -52,19 +52,25 @@ void game::load_position_from_fen(std::string fen) {
 }
 
 void game::create_board() {
-	//load_position_from_fen(STARTING_POSITION);
+	std::cout << "which side should the player control (type only w or b)" << std::endl;
+	std::string color;
+	std::getline(std::cin, color);
 
-	b.squares[utils::notation_to_number("h7")] = WHITE + ROOK;
+	player_is_white = (color == "w") ? true : false;
 
-	b.squares[utils::notation_to_number("d1")] = WHITE + QUEEN;
+	bot.init(b, !player_is_white);
 
-	b.squares[utils::notation_to_number("g1")] = BLACK + QUEEN;
+	load_position_from_fen(STARTING_POSITION);
 
-	b.squares[utils::notation_to_number("b1")] = WHITE + KING;
+	//b.squares[utils::notation_to_number("h8")] = WHITE + ROOK;
 
-	b.squares[utils::notation_to_number("c8")] = BLACK + KING;
+	//b.squares[utils::notation_to_number("f8")] = WHITE + KNIGHT;
 
-	b.squares[utils::notation_to_number("d7")] = BLACK + KNIGHT;
+	//b.squares[utils::notation_to_number("b1")] = WHITE + KING;
+
+	//b.squares[utils::notation_to_number("d8")] = BLACK + KING;
+
+	//b.squares[utils::notation_to_number("d7")] = BLACK + KNIGHT;
 
 	for (int i = 0; i < 64; i++) {
 		int piece = b.squares[i];
@@ -103,19 +109,42 @@ void game::draw_board() {
 	}
 	std::cout << std::endl << "a b c d e f g h" << std::endl << std::endl;
 }
+void game::handle_play() {
+	move move_to_play;
+	
+	if (b.white_turn) {
+		if (player_is_white) {
+			handle_input(&move_to_play);
+		}
+		else {
+			bot.handle_turn(&move_to_play);
+		}
+	}
+	else {
+		if (!player_is_white) {
+			handle_input(&move_to_play);
+		}
+		else {
+			bot.handle_turn(&move_to_play);
+		}
+	}
+	b.make_move(move_to_play, false);
+}
 
-void game::handle_input() {
+void game::handle_input(move* move_ptr) {
+	move_gen n;
+	std::vector<move> legal_moves = n.generate_moves(b);
+	
+	reset:
 	std::cout << std::endl << "enter move in the format [ e2e4 ] : ";
 	std::string _move;
 	std::getline(std::cin, _move);
 	
 	int start_index = utils::notation_to_number(_move.substr(0, 2));
 	int target_index = utils::notation_to_number(_move.substr(2, 4));
+	int flag = 0;
 
 	bool is_legal = false;
-	move_gen n;
-
-	std::vector<move> legal_moves = n.generate_moves(b);
 
 	for (int i = 0; i < legal_moves.size(); i++) {
 		move legal_move = legal_moves[i];
@@ -125,6 +154,7 @@ void game::handle_input() {
 		
 		if (legal_move.get_start_square() == start_index && legal_move.get_target_square() == target_index) {
 			is_legal = true;
+			flag = legal_move.get_flag();
 			break;
 		}
 	}
@@ -136,12 +166,32 @@ void game::handle_input() {
 		
 	}
 
-	if (is_legal)
-		b.make_move(move(start_index, target_index), false);
-	else
+	if (is_legal) {
+		move_ptr->move_value = move(start_index, target_index, flag).move_value;
+	}
+	else {
 		std::cout << "move was illegal";
+		goto reset;
+	}	
 }
 
+
+bool game::game_ended() {
+	move_gen n;
+	std::vector<move> legal_moves = n.generate_moves(b);
+
+	if (legal_moves.size() == 0) {
+		if (n.in_check()) {
+			std::cout << "game over, checkmate" << std::endl;
+			return false;
+		}
+		std::cout << "game over, stalemate" << std::endl;
+		return false;
+	}
+	//Im ignoring threefold, 50 move rule, and insufficient material right now 
+
+	return true;
+}
 
 
 //std::vector<move> game::gen_moves() {

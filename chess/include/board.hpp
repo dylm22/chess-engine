@@ -64,6 +64,9 @@ struct move {
 	move(int _start_square, int _target_square, int flag) {
 		move_value = (unsigned short)(_start_square | _target_square << 6 | flag << 12);
 	}
+	int get_flag() {
+		return move_value >> 12;
+	}
 	int get_start_square() {
 		return move_value & start_square_mask;
 	}

@@ -13,6 +13,7 @@ public:
 	void gen_sliding_piece_moves(int start_square, int first_dir_index, int last_dir_index);
 	void gen_knight_moves();
 	void gen_king_moves();
+	void gen_pawn_moves();
 
 	void calculate_attack_map();
 	void gen_sliding_attack_map();
@@ -22,7 +23,9 @@ public:
 	bool square_is_in_check_ray(int square);
 	bool square_is_attacked(int square);
 	void determine_castling_rights();
-
+	bool check_after_en_passant(int start_square, int target_square, int en_passant_captured_square);
+	bool square_attacked_after_en_passant(int en_passant_capture_square, int start_square);
+	bool in_check();
 
 private:
 	std::vector<move> moves;

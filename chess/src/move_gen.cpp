@@ -17,6 +17,7 @@ std::vector<move> move_gen::generate_moves(board b) {
 
 	generate_sliding_moves();
 	gen_knight_moves();
+	gen_pawn_moves();
 
 	return moves;
 }
@@ -49,7 +50,7 @@ void move_gen::gen_king_moves() {
 
 		int piece_on_target_square = b.squares[target_square];
 
-		bool is_enemy_piece = (utils::is_black(piece_on_target_square) != is_black);
+		bool is_enemy_piece = (piece_on_target_square != NONE && utils::is_black(piece_on_target_square) != is_black);
 		if (piece_on_target_square != NONE && !is_enemy_piece) {
 			continue;
 		}
@@ -157,10 +158,83 @@ void move_gen::gen_knight_moves() {
 
 			bool is_capture = target_square_piece != NONE;
 
-			if ((utils::is_black(target_square_piece) != is_black) || (check && !square_is_in_check_ray(target_square))) { 
+			if ((is_capture && utils::is_black(target_square_piece) == is_black) || (check && !square_is_in_check_ray(target_square))) { 
 				continue;
 			}
 			moves.push_back(move(square, target_square));
+		}
+	}
+}
+
+void move_gen::gen_pawn_moves() {
+	piece_list friendly_pawns = b.pawns[mover_index];
+	int pawn_offset = (b.white_turn) ? 8 : -8;
+	int start_rank = (b.white_turn) ? 1 : 6;
+	int rank_before_promotion = (b.white_turn) ? 6 : 1;
+
+	int en_passant_file = ((int)(b.cur_game_state >> 4) & 15) - 1;
+	int en_passant_square = -1;
+
+	if (en_passant_file != -1) {
+		en_passant_square = 8 * ((b.white_turn) ? 5 : 2) + en_passant_file;
+	}
+
+	for (int i = 0; i < friendly_pawns.count(); i++) {
+		int start_square = friendly_pawns[i];
+		int rank = start_square >> 3; //crazy math amiright
+		bool one_square_from_promotion = (rank == rank_before_promotion);
+
+		int square_one_forward = start_square + pawn_offset;
+
+		if (b.squares[square_one_forward] == NONE) {
+			if (!is_pinned(start_square) || is_moving_along_ray(pawn_offset, start_square, b.king_squares[mover_index])) {
+				if (!check || square_is_in_check_ray(square_one_forward)) {
+					if (one_square_from_promotion) {
+						//PROMOTION
+					}
+					else {
+						moves.push_back(move(start_square, square_one_forward));
+					}
+				}
+
+				if (rank == start_rank) {
+					int square_two_forward = square_one_forward + pawn_offset;
+					if (b.squares[square_two_forward] == NONE) {
+						if (!check || square_is_in_check_ray(square_two_forward)) {
+							moves.push_back(move(start_square, square_two_forward, TWO_PAWN_PUSH_FLAG));
+						}
+					}
+				}
+			}
+		}
+
+		for (int k = 0; k < 2; k++) {
+			if (precomputed_data::num_squares_to_edge[start_square][precomputed_data::pawn_attack_dirs[mover_index][k]] > 0) {
+				int pawn_capture_dir = precomputed_data::dir_offsets[precomputed_data::pawn_attack_dirs[mover_index][k]];
+				int target_square = start_square + pawn_capture_dir;
+				int target_piece = b.squares[target_square];
+
+				if (is_pinned(start_square) && !is_moving_along_ray(pawn_capture_dir, b.king_squares[mover_index], start_square)) {
+					continue;
+				}
+				if (is_black != utils::is_black(target_piece) && target_piece != NONE) {
+					if (check && !square_is_in_check_ray(target_square)) {
+						continue;
+					}
+					if (one_square_from_promotion) {
+						//PROMOTION
+					}
+					else {
+						moves.push_back(move(start_square, target_square));
+					}
+				}
+				if (target_square == en_passant_square) {
+					int en_passant_captured_pawn_square = target_square + ((b.white_turn) ? -8 : 8);
+					if (!check_after_en_passant(start_square, target_piece, en_passant_captured_pawn_square)) {
+						moves.push_back(move(start_square,target_square,EN_PASSANT_FLAG));
+					}
+				}
+			}
 		}
 	}
 }
@@ -320,5 +394,62 @@ void move_gen::determine_castling_rights() {
 	can_kingside_castle = (b.cur_game_state & m1) != 0;
 
 	int m2 = (b.white_turn) ? 2 : 8;
-	can_kingside_castle = (b.cur_game_state & m2) != 0;
+	can_queenside_castle = (b.cur_game_state & m2) != 0;
+}
+
+bool move_gen::check_after_en_passant(int start_square, int target_square, int en_passant_captured_square) {
+	b.squares[target_square] = b.squares[start_square];
+	b.squares[start_square] = NONE;
+	b.squares[en_passant_captured_square] = NONE;
+
+	bool in_check_after = false;
+	if (square_attacked_after_en_passant(en_passant_captured_square, start_square)) {
+		in_check_after = true;
+	}
+
+	b.squares[target_square] = NONE;
+	b.squares[start_square] = PAWN + mover_color;
+	b.squares[en_passant_captured_square] = PAWN + opponent_color;
+	return in_check_after;
+}
+
+bool move_gen::square_attacked_after_en_passant(int en_passant_capture_square, int start_square) {
+	if (utils::bitboard_contains_square(pawnless_opponent_attack_mask, b.king_squares[mover_index])) {
+		return true;
+	}
+
+	int dir_index = (en_passant_capture_square < b.king_squares[mover_index]) ? 2 : 3;
+	for (int i = 0; i < precomputed_data::num_squares_to_edge[b.king_squares[mover_index]][dir_index]; i++) {
+		int square_i = b.king_squares[mover_index] + precomputed_data::dir_offsets[dir_index] * (i + 1);
+		int piece = b.squares[square_i];
+
+		if (piece != NONE) {
+			if (is_black && utils::is_black(piece)) {
+				break;
+			}
+			else {
+				if (utils::is_horizontal_sliding(piece)) {
+					return true;
+				}
+				else {
+					break;
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < 2; i++) {
+		if (precomputed_data::num_squares_to_edge[b.king_squares[mover_index]][precomputed_data::pawn_attack_dirs[mover_index][i]] > 0) {
+			int piece = b.squares[b.king_squares[mover_index] + precomputed_data::dir_offsets[precomputed_data::pawn_attack_dirs[mover_index][i]]];
+			if (piece == (PAWN + opponent_color)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool move_gen::in_check() {
+	return check;
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "board.hpp"
+#include "ai_player.hpp"
 #include <iostream>
 
 
@@ -14,12 +15,16 @@ public:
 	static board b;
 
 	//std::vector<move> gen_moves();
-	void handle_input();
+	void handle_input(move* move_ptr);
 	void load_position_from_fen(std::string fen);
 	void create_board();
 	void draw_board();
+	void handle_play();
+	bool game_ended();
 
 private :
+	static ai_player bot;
+	bool player_is_white;
 	bool w_castle_king;
 	bool w_castle_queen;
 	bool b_castle_king;

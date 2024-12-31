@@ -39,7 +39,7 @@ void board::make_move(move move, bool in_search) {
 	int color = white_turn ? 0 : 1;
 	int captured_piece_type = utils::piece_type(squares[move_to]);
 
-	int move_flag = move.move_value >> 12; //move 12 bits over to get to the flag part
+	int move_flag = move.get_flag(); //move 12 bits over to get to the flag part
 
 	bool is_promotion = false; //FIX LATER
 
@@ -61,9 +61,17 @@ void board::make_move(move move, bool in_search) {
 	else {
 		switch (move_flag)
 		{
+		case EN_PASSANT_FLAG:
+			{
+			int en_passant_square = move_to + ((white_turn) ? -8 : 8);
+			squares[en_passant_square] = NONE;
+			pawns[1 - color].remove_piece_at_square(en_passant_square);
+			break;
+			}
 		case CASTLE_FLAG:
+			{
 			bool king_side = (move_to == 6 || move_to == 62); // g1 and g8 in index form
-			int castling_rook_from = (king_side) ? move_to + 1 : move_to - 2; 
+			int castling_rook_from = (king_side) ? move_to + 1 : move_to - 2;
 			int castling_rook_to = (king_side) ? move_to - 1 : move_to + 1;
 
 			squares[castling_rook_from] = NONE;
@@ -71,10 +79,16 @@ void board::make_move(move move, bool in_search) {
 
 			rooks[color].move_piece(castling_rook_from, castling_rook_to);
 			break;
+			}
 		}
 	}
 	squares[move_to] = move_piece;
 	squares[move_from] = NONE;
+
+	if (move_flag == TWO_PAWN_PUSH_FLAG) {
+		int file = (move_from & 0b000111) + 1;
+		cur_game_state |= (unsigned char)(file << 4);
+	}
 
 	if (old_castle_state != 0) {
 		if (move_to == 7 || move_from == 7) { //h1
