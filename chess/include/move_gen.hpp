@@ -14,6 +14,7 @@ public:
 	void gen_knight_moves();
 	void gen_king_moves();
 	void gen_pawn_moves();
+	void make_promotion_moves(int start_square, int target_square);
 
 	void calculate_attack_map();
 	void gen_sliding_attack_map();

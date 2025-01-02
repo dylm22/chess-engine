@@ -41,7 +41,7 @@ void board::make_move(move move, bool in_search) {
 
 	int move_flag = move.get_flag(); //move 12 bits over to get to the flag part
 
-	bool is_promotion = false; //FIX LATER
+	bool is_promotion = move.is_promotion(); 
 
 	//cur_game_state |= (unsigned short)((captured_piece_type%10) << 8);
 	if (squares[move_to] != NONE) { //capturing
@@ -56,7 +56,31 @@ void board::make_move(move move, bool in_search) {
 		get_piece_list(color, piece_type)->move_piece(move_from, move_to);
 	}
 	if (is_promotion) {
-
+		int promote_type = 0;
+		switch (move_flag) {
+		case QUEEN_PROMO_FLAG: {
+			promote_type = QUEEN;
+			queens[color].add_piece_at_square(move_to);
+			break;
+		}
+		case ROOK_PROMO_FLAG: {
+			promote_type = ROOK;
+			rooks[color].add_piece_at_square(move_to);
+			break;
+		}
+		case KNIGHT_PROMO_FLAG: {
+			promote_type = KNIGHT;
+			knights[color].add_piece_at_square(move_to);
+			break;
+		}
+		case BISHOP_PROMO_FLAG: {
+			promote_type = BISHOP;
+			bishops[color].add_piece_at_square(move_to);
+			break;
+		}
+		}
+		move_piece = promote_type + ((color == 0) ? WHITE : BLACK);
+		pawns[color].remove_piece_at_square(move_to);
 	}
 	else {
 		switch (move_flag)

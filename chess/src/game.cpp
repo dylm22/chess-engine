@@ -60,17 +60,13 @@ void game::create_board() {
 
 	bot.init(b, !player_is_white);
 
-	load_position_from_fen(STARTING_POSITION);
+	//load_position_from_fen(STARTING_POSITION);
+	
 
-	//b.squares[utils::notation_to_number("h8")] = WHITE + ROOK;
-
-	//b.squares[utils::notation_to_number("f8")] = WHITE + KNIGHT;
-
-	//b.squares[utils::notation_to_number("b1")] = WHITE + KING;
-
-	//b.squares[utils::notation_to_number("d8")] = BLACK + KING;
-
-	//b.squares[utils::notation_to_number("d7")] = BLACK + KNIGHT;
+	b.squares[utils::notation_to_number("e2")] = WHITE + PAWN;
+	b.squares[utils::notation_to_number("c7")] = BLACK + PAWN;
+	b.squares[utils::notation_to_number("h1")] = WHITE + KING;
+	b.squares[utils::notation_to_number("a8")] = BLACK + KING;
 
 	for (int i = 0; i < 64; i++) {
 		int piece = b.squares[i];
@@ -155,6 +151,27 @@ void game::handle_input(move* move_ptr) {
 		if (legal_move.get_start_square() == start_index && legal_move.get_target_square() == target_index) {
 			is_legal = true;
 			flag = legal_move.get_flag();
+			if (legal_move.is_promotion()){
+				std::cout << "enter promotion (q, n, b, r): ";
+				std::string _input;
+				std::getline(std::cin, _input);
+				int k = (int)_input.c_str()[0];
+				switch (k) {
+				case 113:
+					flag = QUEEN_PROMO_FLAG;
+					break;
+				case 110:
+					flag = KNIGHT_PROMO_FLAG;
+					break;
+				case 114:
+					flag = ROOK_PROMO_FLAG;
+					break;
+				case 98:
+					flag = BISHOP_PROMO_FLAG;
+					break;
+				}
+			}
+
 			break;
 		}
 	}

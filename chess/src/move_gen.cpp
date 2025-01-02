@@ -190,7 +190,7 @@ void move_gen::gen_pawn_moves() {
 			if (!is_pinned(start_square) || is_moving_along_ray(pawn_offset, start_square, b.king_squares[mover_index])) {
 				if (!check || square_is_in_check_ray(square_one_forward)) {
 					if (one_square_from_promotion) {
-						//PROMOTION
+						make_promotion_moves(start_square, square_one_forward);
 					}
 					else {
 						moves.push_back(move(start_square, square_one_forward));
@@ -222,7 +222,7 @@ void move_gen::gen_pawn_moves() {
 						continue;
 					}
 					if (one_square_from_promotion) {
-						//PROMOTION
+						make_promotion_moves(start_square, target_square);
 					}
 					else {
 						moves.push_back(move(start_square, target_square));
@@ -378,6 +378,10 @@ void move_gen::calculate_attack_map() {
 	}
 	pawnless_opponent_attack_mask = opponent_sliding_attack_mask | opponent_knight_attack_mask | precomputed_data::king_attack_bitboards[b.king_squares[opponent_index]];
 	opponent_attack_mask = pawnless_opponent_attack_mask | opponent_pawn_attack_mask;
+}
+
+void move_gen::make_promotion_moves(int start_square, int target_square) {
+	moves.push_back(move(start_square, target_square, GENERAL_PROMOTION_FLAG));
 }
 
 

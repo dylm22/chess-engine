@@ -14,6 +14,7 @@
 #define ROOK_PROMO_FLAG 5
 #define BISHOP_PROMO_FLAG 6
 #define TWO_PAWN_PUSH_FLAG 7
+#define GENERAL_PROMOTION_FLAG 8
 
 class board {
 public:
@@ -72,6 +73,10 @@ struct move {
 	}
 	int get_target_square() {
 		return (move_value & target_square_mask) >> 6;
+	}
+	bool is_promotion() {
+		int flag = get_flag();
+		return (flag == GENERAL_PROMOTION_FLAG || flag == QUEEN_PROMO_FLAG || flag == BISHOP_PROMO_FLAG || flag == KNIGHT_PROMO_FLAG || flag == ROOK_PROMO_FLAG);
 	}
 	
 };
