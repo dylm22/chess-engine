@@ -1,0 +1,9 @@
+C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\src\bitboard.cpp;C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\x64\Debug\bitboard.obj
+C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\src\engine.cpp;C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\x64\Debug\engine.obj
+C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\src\main.cpp;C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\x64\Debug\main.obj
+C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\src\memory.cpp;C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\x64\Debug\memory.obj
+C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\src\move_gen.cpp;C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\x64\Debug\move_gen.obj
+C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\src\position.cpp;C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\x64\Debug\position.obj
+C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\src\trans_table.cpp;C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\x64\Debug\trans_table.obj
+C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\src\uci.cpp;C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\x64\Debug\uci.obj
+C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\src\utils.cpp;C:\Users\dylan\Desktop\dev\chess_testing_ground\chess_testing_ground\x64\Debug\utils.obj
